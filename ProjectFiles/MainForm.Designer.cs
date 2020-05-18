@@ -39,6 +39,8 @@
             this.labelUserContent = new System.Windows.Forms.Label();
             this.labelFolderContent = new System.Windows.Forms.Label();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+            this.AuthorLabel = new System.Windows.Forms.Label();
+            this.GitRepoLabel = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -135,6 +137,28 @@
             this.labelFolderContent.TabIndex = 6;
             this.labelFolderContent.Text = "[hidden]";
             // 
+            // AuthorLabel
+            // 
+            this.AuthorLabel.AutoSize = true;
+            this.AuthorLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 6.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.AuthorLabel.ForeColor = System.Drawing.Color.Silver;
+            this.AuthorLabel.Location = new System.Drawing.Point(301, 392);
+            this.AuthorLabel.Name = "AuthorLabel";
+            this.AuthorLabel.Size = new System.Drawing.Size(66, 12);
+            this.AuthorLabel.TabIndex = 8;
+            this.AuthorLabel.Text = "By: dex_manly";
+            // 
+            // GitRepoLabel
+            // 
+            this.GitRepoLabel.AutoSize = true;
+            this.GitRepoLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 6.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.GitRepoLabel.ForeColor = System.Drawing.Color.Silver;
+            this.GitRepoLabel.Location = new System.Drawing.Point(12, 392);
+            this.GitRepoLabel.Name = "GitRepoLabel";
+            this.GitRepoLabel.Size = new System.Drawing.Size(217, 12);
+            this.GitRepoLabel.TabIndex = 9;
+            this.GitRepoLabel.Text = "GitHub: DexManly/Borderlands3ReadOnlyManager";
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -146,6 +170,8 @@
             this.Controls.Add(this.UserLabel);
             this.Controls.Add(this.FolderLabel);
             this.Controls.Add(this.dataGridView1);
+            this.Controls.Add(this.AuthorLabel);
+            this.Controls.Add(this.GitRepoLabel);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.MaximizeBox = false;
             this.Name = "MainForm";
@@ -170,6 +196,8 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn FileName;
         private System.Windows.Forms.DataGridViewTextBoxColumn DateTime;
         private System.Windows.Forms.DataGridViewCheckBoxColumn ReadOnly;
+        private System.Windows.Forms.Label AuthorLabel;
+        private System.Windows.Forms.Label GitRepoLabel;
     }
 }
 

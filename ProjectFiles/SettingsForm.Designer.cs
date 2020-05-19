@@ -53,6 +53,7 @@
             this.SettingsFolderTextBox.Size = new System.Drawing.Size(348, 20);
             this.SettingsFolderTextBox.TabIndex = 1;
             this.SettingsFolderTextBox.Leave += new System.EventHandler(this.SettingsFolderTextBox_Leave);
+            this.SettingsFolderTextBox.PreviewKeyDown += new System.Windows.Forms.PreviewKeyDownEventHandler(this.SettingsFolderTextBox_PreviewKeyDown);
             // 
             // UserLabel
             // 
@@ -66,7 +67,6 @@
             // UserComboBox
             // 
             this.UserComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.UserComboBox.Enabled = false;
             this.UserComboBox.FormattingEnabled = true;
             this.UserComboBox.Location = new System.Drawing.Point(47, 42);
             this.UserComboBox.Name = "UserComboBox";
@@ -95,6 +95,7 @@
             // 
             // SaveButton
             // 
+            this.SaveButton.Enabled = false;
             this.SaveButton.Location = new System.Drawing.Point(360, 71);
             this.SaveButton.Name = "SaveButton";
             this.SaveButton.Size = new System.Drawing.Size(75, 23);

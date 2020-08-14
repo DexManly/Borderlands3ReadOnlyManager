@@ -24,7 +24,7 @@ Applying read-only to Borderlands 3 files requires slightly more effort than in 
     - Level
     - Class
 
-![Main Screen Example](Images/bl3ReadOnlyManager_MainForm.jpg)
+![Main Screen Example](https://github.com/DexManly/Borderlands3ReadOnlyManager/blob/master/Images/bl3ReadOnlyManager_MainForm.JPG?raw=true)
 
 # Credits
 * [FromDarkHell](https://github.com/FromDarkHell) for looking at how they read .sav files in [BL3ProfileEditor](https://github.com/FromDarkHell/BL3ProfileEditor). Specifically my Borderlands3SaveFile class closely resembles GVASData but rewritten a bit to use a BinaryReader because IO couldn't read metadata from a readonly file.

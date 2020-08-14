@@ -1,15 +1,16 @@
-﻿using System;
+﻿using Borderlands3ReadOnlyManager.HelperClasses;
+using Gibbed.Borderlands3.SaveFormats;
+using OakSave;
+using ProtoBuf;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Configuration;
-using System.Data;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Security.AccessControl;
 using System.Security.Principal;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Borderlands3ReadOnlyManager
@@ -17,6 +18,7 @@ namespace Borderlands3ReadOnlyManager
     public partial class MainForm : Form
     {
         private readonly string HIDDEN = "[hidden]";
+        private readonly int DIR_TRUNCATE_LEN = 85; 
 
         private string _directory = "";
         private string _ntAccountName = "";
@@ -26,6 +28,7 @@ namespace Borderlands3ReadOnlyManager
         {
             InitializeComponent();
             ReadSettingsAndSetLabels();
+            ReadGridSortOrderAndApply();
             MaybePromptForInitialSettings();
         }
 
@@ -47,11 +50,37 @@ namespace Borderlands3ReadOnlyManager
             }
         }
 
+        private void ReadGridSortOrderAndApply()
+        {
+            Configuration config = ConfigurationManager.OpenExeConfiguration(Application.ExecutablePath);
+
+            string sortedColumnIndex = config.AppSettings.Settings["sortedColumnIndex"].Value;
+            if (int.TryParse(sortedColumnIndex, out int intSortedColumnIndex))
+            {
+                string sortedColumnOrder = config.AppSettings.Settings["sortedColumnOrder"].Value;
+                if (Enum.TryParse(sortedColumnOrder, out SortOrder sortOrder))
+                {
+                    switch (sortOrder)
+                    {
+                        case SortOrder.Ascending:
+                            dataGridView1.Sort(dataGridView1.Columns[intSortedColumnIndex], ListSortDirection.Ascending);
+                            break;
+                        case SortOrder.Descending:
+                            dataGridView1.Sort(dataGridView1.Columns[intSortedColumnIndex], ListSortDirection.Descending);
+                            break;
+                        case SortOrder.None:
+                        default:
+                            break;
+                    }
+                }
+            }
+        }
+
         private void MaybePromptForInitialSettings()
         {
             if (string.IsNullOrWhiteSpace(_directory) || string.IsNullOrWhiteSpace(_ntAccountName))
             {
-                MessageBox.Show("Please update settings.", "Settings Missing!");
+                MessageBox.Show($"Please update settings on the next screen.{Environment.NewLine}{Environment.NewLine}NOTE: This is a new tool, you should regularly back up your data and make sure cloud saves are turned off before proceeding! The author is not responsible for any loss of data.", "New User / Settings Missing", MessageBoxButtons.OK, MessageBoxIcon.None);
                 ChangeSettings();
             }
         }
@@ -70,8 +99,8 @@ namespace Borderlands3ReadOnlyManager
 
         private string GetDirectoryTextFormatted()
         {
-            if (_directory.Length >= 50)
-                return _directory.Substring(0, 50) + "...";
+            if (_directory.Length >= DIR_TRUNCATE_LEN)
+                return _directory.Substring(0, DIR_TRUNCATE_LEN) + "...";
             else
                 return _directory;
         }
@@ -94,6 +123,7 @@ namespace Borderlands3ReadOnlyManager
                 int selectedrowIndex = dataGridView1.SelectedCells[0].RowIndex;
                 selectedColIndex = dataGridView1.SelectedCells[0].ColumnIndex;
                 selectedFileName = dataGridView1.Rows[selectedrowIndex].Cells[0].Value.ToString();
+                Console.WriteLine("Selected File Name: " + selectedFileName);
             }
 
             // keep track of any sorting that was applied
@@ -114,21 +144,30 @@ namespace Borderlands3ReadOnlyManager
         {
             dataGridView1.Rows.Clear();
 
-            List<FileInfo> fileInfoList = new List<FileInfo>();
+            IEnumerable<FileInfo> fileInfoList = new List<FileInfo>();
             if (Directory.Exists(_directory))
-                fileInfoList = new DirectoryInfo(_directory).GetFiles().ToList();
+                fileInfoList = new DirectoryInfo(_directory).EnumerateFiles("*.sav");
 
-            foreach (FileInfo file in fileInfoList)
+            // Get meta data from files.
+            foreach (FileInfo fileInfo in fileInfoList)
             {
-                if (file.Extension.Equals(".sav")) // Only mess with save files
+                try
                 {
-                    bool isFileReadOnly = IsFileReadOnly(file, _ntAccountName);
-                    dataGridView1.Rows.Add(file.Name, file.LastWriteTime, isFileReadOnly);
+                    Borderlands3SaveFile saveFile = new Borderlands3SaveFile(fileInfo);
+                    if (saveFile.IsGSAVFile)
+                    {
+                        dataGridView1.Rows.Add(saveFile.FileName, 
+                                               saveFile.MetaData.NickName, 
+                                               saveFile.MetaData.ClassName, 
+                                               saveFile.MetaData.PlayerLevel, 
+                                               fileInfo.LastWriteTime, saveFile.
+                                               IsFileReadOnly(_ntAccountName));
+                    }
+                }
+                catch (Exception)
+                {
                 }
             }
-
-            if (dataGridView1.Rows.Count > 0)
-                dataGridView1.Rows[0].Cells[0].Selected = true;
         }
 
         private void ResetDataGridViewSortIfAny(int? sortedColumnIndex, SortOrder sortOrder)
@@ -165,31 +204,6 @@ namespace Borderlands3ReadOnlyManager
             }
         }
 
-        private bool IsFileReadOnly(FileInfo file, string ntAccountName)
-        {
-            bool isReadOnly = false;
-
-            if (file.IsReadOnly) // need to check if user has denied write permissions
-            {
-                var fileAccessRules = file.GetAccessControl().GetAccessRules(true, true, typeof(NTAccount));
-                foreach (AuthorizationRule fileRule in fileAccessRules)
-                {
-                    if (fileRule.IdentityReference.Value.Equals(ntAccountName, StringComparison.CurrentCultureIgnoreCase))
-                    {
-                        //Cast to a FileSystemAccessRule to check for access rights
-                        var filesystemAccessRule = (FileSystemAccessRule)fileRule;
-                    
-                        if (filesystemAccessRule.FileSystemRights == FileSystemRights.Write && filesystemAccessRule.AccessControlType == AccessControlType.Deny)
-                        {
-                            isReadOnly = true;
-                        }
-                    }
-                }
-            }
-
-            return isReadOnly;
-        }
-
         private void SetReadOnlyForFile(string filePath)
         {
             try
@@ -218,6 +232,25 @@ namespace Borderlands3ReadOnlyManager
             catch
             {
             }
+        }
+
+        private void SaveSortOrderInfoToConfig()
+        {
+            string sortedIndex = "";
+            string sortedOrder = "";
+
+            if (dataGridView1.SortedColumn != null)
+            {
+                sortedIndex = dataGridView1.SortedColumn.Index.ToString();
+                sortedOrder = dataGridView1.SortOrder.ToString();
+            }
+
+            Configuration config = ConfigurationManager.OpenExeConfiguration(Application.ExecutablePath);
+            config.AppSettings.Settings.Remove("sortedColumnIndex");
+            config.AppSettings.Settings.Remove("sortedColumnOrder");
+            config.AppSettings.Settings.Add("sortedColumnIndex", sortedIndex);
+            config.AppSettings.Settings.Add("sortedColumnOrder", sortedOrder);
+            config.Save(ConfigurationSaveMode.Modified);
         }
 
         private void dataGridView1_CellValueChanged(object sender, DataGridViewCellEventArgs e)
@@ -263,6 +296,11 @@ namespace Borderlands3ReadOnlyManager
         private void MainForm_Activated(object sender, EventArgs e)
         {
             SetDataGridViewData();
+        }
+
+        private void MainForm_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            SaveSortOrderInfoToConfig();
         }
     }
 }

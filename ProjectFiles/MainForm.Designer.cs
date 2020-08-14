@@ -31,6 +31,9 @@
             this.components = new System.ComponentModel.Container();
             this.dataGridView1 = new System.Windows.Forms.DataGridView();
             this.FileName = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.NickName = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Class = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Level = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.DateTime = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.ReadOnly = new System.Windows.Forms.DataGridViewCheckBoxColumn();
             this.FolderLabel = new System.Windows.Forms.Label();
@@ -53,6 +56,9 @@
             this.dataGridView1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dataGridView1.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.FileName,
+            this.NickName,
+            this.Class,
+            this.Level,
             this.DateTime,
             this.ReadOnly});
             this.dataGridView1.Location = new System.Drawing.Point(12, 72);
@@ -60,26 +66,56 @@
             this.dataGridView1.Name = "dataGridView1";
             this.dataGridView1.RowHeadersVisible = false;
             this.dataGridView1.RowHeadersWidthSizeMode = System.Windows.Forms.DataGridViewRowHeadersWidthSizeMode.DisableResizing;
-            this.dataGridView1.Size = new System.Drawing.Size(354, 321);
+            this.dataGridView1.Size = new System.Drawing.Size(551, 321);
             this.dataGridView1.TabIndex = 2;
             this.dataGridView1.CellMouseUp += new System.Windows.Forms.DataGridViewCellMouseEventHandler(this.dataGridView1_CellMouseUp);
             this.dataGridView1.CellValueChanged += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridView1_CellValueChanged);
             // 
             // FileName
             // 
+            this.FileName.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
             this.FileName.FillWeight = 111.9289F;
             this.FileName.HeaderText = "File Name";
-            this.FileName.MinimumWidth = 140;
+            this.FileName.MinimumWidth = 80;
             this.FileName.Name = "FileName";
             this.FileName.ReadOnly = true;
+            this.FileName.Width = 80;
+            // 
+            // NickName
+            // 
+            this.NickName.HeaderText = "Nick Name";
+            this.NickName.Name = "NickName";
+            this.NickName.ReadOnly = true;
+            // 
+            // Class
+            // 
+            this.Class.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
+            this.Class.HeaderText = "Class";
+            this.Class.MinimumWidth = 70;
+            this.Class.Name = "Class";
+            this.Class.ReadOnly = true;
+            this.Class.Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.Class.Width = 70;
+            // 
+            // Level
+            // 
+            this.Level.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
+            this.Level.HeaderText = "Lvl";
+            this.Level.MinimumWidth = 50;
+            this.Level.Name = "Level";
+            this.Level.ReadOnly = true;
+            this.Level.Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.Level.Width = 50;
             // 
             // DateTime
             // 
-            this.DateTime.FillWeight = 111.9289F;
+            this.DateTime.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
             this.DateTime.HeaderText = "Last Modified";
             this.DateTime.MinimumWidth = 140;
             this.DateTime.Name = "DateTime";
             this.DateTime.ReadOnly = true;
+            this.DateTime.Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.DateTime.Width = 140;
             // 
             // ReadOnly
             // 
@@ -111,7 +147,7 @@
             // 
             // ChangeSettingsButton
             // 
-            this.ChangeSettingsButton.Location = new System.Drawing.Point(305, 39);
+            this.ChangeSettingsButton.Location = new System.Drawing.Point(503, 39);
             this.ChangeSettingsButton.Name = "ChangeSettingsButton";
             this.ChangeSettingsButton.Size = new System.Drawing.Size(60, 23);
             this.ChangeSettingsButton.TabIndex = 5;
@@ -142,7 +178,7 @@
             this.AuthorLabel.AutoSize = true;
             this.AuthorLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 6.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.AuthorLabel.ForeColor = System.Drawing.Color.Silver;
-            this.AuthorLabel.Location = new System.Drawing.Point(301, 392);
+            this.AuthorLabel.Location = new System.Drawing.Point(497, 392);
             this.AuthorLabel.Name = "AuthorLabel";
             this.AuthorLabel.Size = new System.Drawing.Size(66, 12);
             this.AuthorLabel.TabIndex = 8;
@@ -163,7 +199,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(377, 405);
+            this.ClientSize = new System.Drawing.Size(575, 405);
             this.Controls.Add(this.labelUserContent);
             this.Controls.Add(this.labelFolderContent);
             this.Controls.Add(this.ChangeSettingsButton);
@@ -179,6 +215,7 @@
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Borderlands 3 Read Only Manager";
             this.Activated += new System.EventHandler(this.MainForm_Activated);
+            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.MainForm_FormClosed);
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -193,11 +230,14 @@
         private System.Windows.Forms.Label labelUserContent;
         private System.Windows.Forms.Label labelFolderContent;
         private System.Windows.Forms.ToolTip toolTip1;
-        private System.Windows.Forms.DataGridViewTextBoxColumn FileName;
-        private System.Windows.Forms.DataGridViewTextBoxColumn DateTime;
-        private System.Windows.Forms.DataGridViewCheckBoxColumn ReadOnly;
         private System.Windows.Forms.Label AuthorLabel;
         private System.Windows.Forms.Label GitRepoLabel;
+        private System.Windows.Forms.DataGridViewTextBoxColumn FileName;
+        private System.Windows.Forms.DataGridViewTextBoxColumn NickName;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Class;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Level;
+        private System.Windows.Forms.DataGridViewTextBoxColumn DateTime;
+        private System.Windows.Forms.DataGridViewCheckBoxColumn ReadOnly;
     }
 }
 

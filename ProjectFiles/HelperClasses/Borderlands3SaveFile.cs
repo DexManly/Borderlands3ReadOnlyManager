@@ -3,11 +3,13 @@ using OakSave;
 using ProtoBuf;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Security.AccessControl;
 using System.Security.Principal;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Borderlands3ReadOnlyManager.HelperClasses
@@ -15,44 +17,106 @@ namespace Borderlands3ReadOnlyManager.HelperClasses
     public class Borderlands3SaveFile
     {
         private FileInfo _fileInfo;
+        private string _ntAccountName;
+        private SaveFileMetaData _metaData = new SaveFileMetaData();
+        private bool _isReadOnly;
 
         #region Constructor
-        public Borderlands3SaveFile(FileInfo fileInfo)
+        public Borderlands3SaveFile(FileInfo fileInfo, string ntAccountName, List<string> isHotkeyList)
         {
             if (fileInfo == null) throw new ArgumentNullException(nameof(fileInfo));
             _fileInfo = fileInfo;
 
-            // Use reader to parse information
-            using (BinaryReader br = new BinaryReader(File.OpenRead(fileInfo.FullName)))
-            {
-                ASCIIEncoding ascii = new ASCIIEncoding();
-                string fileHeader = ascii.GetString(br.ReadBytes(4));
-                
-                if (fileHeader.Equals("GVAS"))
-                    IsGSAVFile = true;
-                else
-                    return; // no need to parse any further
+            if (string.IsNullOrWhiteSpace(ntAccountName)) throw new ArgumentNullException(nameof(ntAccountName));
+            _ntAccountName = ntAccountName;
 
-                SkipSomeMetaDataWeDontCareAbout(br);
+            _isReadOnly = IsFileReadOnly();
 
-                string saveGameType = ReadUEString(br); // Hopefully of type OakSaveGame or maybe OakProfile
-                MetaData = GetFileMetaData(br, saveGameType);
-            }
+            HotKeyEnabled = (isHotkeyList != null && isHotkeyList.Contains(fileInfo.Name));
+
+            ReadFileLoop();
         }
         #endregion
 
         #region Public Properties
+        public string FileName => _fileInfo.Name;
+
         public bool IsGSAVFile { get; set; } = false;
 
-        public SaveFileMetaData MetaData { get; set; } = new SaveFileMetaData(); // New object should have some nice defaults in case meta data can't be obtained.
+        public string NickName => _metaData.NickName;
+
+        public int? PlayerLevel => _metaData.PlayerLevel;
+
+        public string ClassName => _metaData.ClassName;
 
         public DateTime LastWriteTime => _fileInfo.LastWriteTime;
 
-        public string FileName => _fileInfo.Name;
+        public bool IsReadOnly {
+            get { return _isReadOnly; }
+            set 
+            { 
+                if (value != _isReadOnly)
+                {
+                    FlipReadOnly();
+                }
+            }
+        }
+
+        public bool HotKeyEnabled { get; set; } = false;
         #endregion
 
         #region Public Methods
-        public bool IsFileReadOnly(string ntAccountName)
+        public void ReReadFile(FileInfo fileInfo)
+        {
+            _fileInfo = fileInfo;
+            ReadFileLoop();
+        }
+        #endregion
+
+        #region Private Helper Methods
+        private void FlipReadOnly()
+        {
+            if (_isReadOnly)
+            {
+                RemoveReadOnlyOnFile();
+            }
+            else
+            {
+                SetReadOnlyForFile();
+            }
+
+            _isReadOnly = !_isReadOnly;
+        }
+
+        private void SetReadOnlyForFile()
+        {
+            try
+            {
+                _fileInfo.IsReadOnly = true;
+                FileSecurity fs = new FileSecurity();
+                fs.AddAccessRule(new FileSystemAccessRule(_ntAccountName, FileSystemRights.Write, AccessControlType.Deny));
+                _fileInfo.SetAccessControl(fs);
+            }
+            catch
+            {
+            }
+        }
+
+        private void RemoveReadOnlyOnFile()
+        {
+            try
+            {
+                FileSecurity fs = new FileSecurity();
+                fs.RemoveAccessRule(new FileSystemAccessRule(_ntAccountName, FileSystemRights.Write, AccessControlType.Deny));
+                _fileInfo.SetAccessControl(fs);
+                _fileInfo.IsReadOnly = false;
+            }
+            catch
+            {
+            }
+        }
+        
+        private bool IsFileReadOnly()
         {
             bool isReadOnly = false;
 
@@ -61,7 +125,7 @@ namespace Borderlands3ReadOnlyManager.HelperClasses
                 var fileAccessRules = _fileInfo.GetAccessControl().GetAccessRules(true, true, typeof(NTAccount));
                 foreach (AuthorizationRule fileRule in fileAccessRules)
                 {
-                    if (fileRule.IdentityReference.Value.Equals(ntAccountName, StringComparison.CurrentCultureIgnoreCase))
+                    if (fileRule.IdentityReference.Value.Equals(_ntAccountName, StringComparison.CurrentCultureIgnoreCase))
                     {
                         //Cast to a FileSystemAccessRule to check for access rights
                         var filesystemAccessRule = (FileSystemAccessRule)fileRule;
@@ -75,10 +139,44 @@ namespace Borderlands3ReadOnlyManager.HelperClasses
             }
 
             return isReadOnly;
-        } 
-        #endregion
+        }
 
-        #region Private Helper Methods
+        // Loop because some times the file is in use by other applications and we can't read
+        private void ReadFileLoop()
+        {
+            int retryTimes = 3;
+            TimeSpan sleepyTime = TimeSpan.FromSeconds(.25);
+
+            for (int i = 0; i < retryTimes; i++)
+            {
+                try
+                {
+                    // Use reader to parse information
+                    using (BinaryReader br = new BinaryReader(File.OpenRead(_fileInfo.FullName)))
+                    {
+                        ASCIIEncoding ascii = new ASCIIEncoding();
+                        string fileHeader = ascii.GetString(br.ReadBytes(4));
+
+                        if (fileHeader.Equals("GVAS"))
+                            IsGSAVFile = true;
+                        else
+                            return; // no need to parse any further
+
+                        SkipSomeMetaDataWeDontCareAbout(br);
+
+                        string saveGameType = ReadUEString(br); // Hopefully of type OakSaveGame or maybe OakProfile
+                        _metaData = GetFileMetaData(br, saveGameType);
+                    }
+                    break;
+                }
+                catch (Exception)
+                {
+                    Console.WriteLine("sleepyTime");
+                    Thread.Sleep(sleepyTime);
+                }
+            }
+        }
+
         private void SkipSomeMetaDataWeDontCareAbout(BinaryReader br)
         {
             br.ReadBytes(18); // Skip some version info
@@ -122,6 +220,7 @@ namespace Borderlands3ReadOnlyManager.HelperClasses
 
             saveFileMetaData.PlayerLevel = characterSave.GameStatsDatas.FirstOrDefault(a => a.StatPath.Equals(@"/Game/PlayerCharacters/_Shared/_Design/Stats/Character/Stat_Character_Level.Stat_Character_Level")).StatValue;
             saveFileMetaData.NickName = characterSave.PreferredCharacterName;
+            //characterSave.GameStatsDatas.ForEach(a => Console.WriteLine(a.StatPath + " " + a.StatValue));
             switch (characterSave.PlayerClassData.PlayerClassPath)
             {
                 case @"/Game/PlayerCharacters/Operative/PlayerClassId_Operative.PlayerClassId_Operative":

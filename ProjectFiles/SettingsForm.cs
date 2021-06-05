@@ -16,10 +16,37 @@ namespace Borderlands3ReadOnlyManager
 {
     public partial class SettingsForm : Form
     {
+        #region Public Properties
+        public string FolderPath { get; set; }
+        public string UserName { get; set; }
+        public bool HideSettingsInMainForm { get; set; }
+        #endregion
+
+        #region Constructors
         public SettingsForm()
         {
             InitializeComponent();
         }
+
+        // Used when we already have settings but need to update them
+        public SettingsForm(string folderPath, string userName, bool hideSettingsInMainForm)
+        {
+            InitializeComponent();
+
+            // Try to use the folder path provided. If it no longer exists, leave default
+            if (Directory.Exists(folderPath))
+            {
+                SettingsFolderTextBox.Text = folderPath;
+                SetUserComboBoxOptions(folderPath);
+                UserComboBox.SelectedIndex = UserComboBox.FindStringExact(userName);
+                checkBox1.Checked = hideSettingsInMainForm;
+            }
+            else
+            {
+                MessageBox.Show("Error reading configuration! Please configure again.", "Ooops", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+        #endregion
 
         #region Event Methods
         private void SelectFolderButton_Click(object sender, EventArgs e)
@@ -44,42 +71,12 @@ namespace Borderlands3ReadOnlyManager
 
         private void SaveButton_Click(object sender, EventArgs e)
         {
-            Configuration config = ConfigurationManager.OpenExeConfiguration(Application.ExecutablePath);
-            config.AppSettings.Settings.Remove("folderPath");
-            config.AppSettings.Settings.Remove("userName");
-            config.AppSettings.Settings.Remove("hideSettingInMainForm");
-            config.AppSettings.Settings.Add("folderPath", SettingsFolderTextBox.Text);
-            config.AppSettings.Settings.Add("userName", UserComboBox.Text);
-            config.AppSettings.Settings.Add("hideSettingInMainForm", checkBox1.Checked.ToString());
-            config.Save(ConfigurationSaveMode.Modified);
+            FolderPath = SettingsFolderTextBox.Text;
+            UserName = UserComboBox.Text;
+            HideSettingsInMainForm = checkBox1.Checked;
 
             this.DialogResult = DialogResult.OK;
             this.Close();
-        }
-
-        private void SettingsForm_Load(object sender, EventArgs e)
-        {
-            try
-            {
-                Configuration config = ConfigurationManager.OpenExeConfiguration(Application.ExecutablePath);
-
-                string folderDir = config.AppSettings.Settings["folderPath"].Value;
-                if (!string.IsNullOrWhiteSpace(folderDir) && Directory.Exists(folderDir))
-                {
-                    SettingsFolderTextBox.Text = folderDir;
-                    SetUserComboBoxOptions(folderDir);
-                    UserComboBox.SelectedIndex = UserComboBox.FindStringExact(config.AppSettings.Settings["userName"].Value);
-                }
-
-                if (bool.TryParse(config.AppSettings.Settings["hideSettingInMainForm"].Value, out bool hide))
-                {
-                    checkBox1.Checked = hide;
-                }
-            }
-            catch
-            {
-                MessageBox.Show("Error reading configuration!", "Ooops", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
         }
 
         private void SettingsFolderTextBox_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e)

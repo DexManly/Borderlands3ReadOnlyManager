@@ -35,6 +35,7 @@
             this.Class = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Level = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.DateTime = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.HotKey = new System.Windows.Forms.DataGridViewCheckBoxColumn();
             this.ReadOnly = new System.Windows.Forms.DataGridViewCheckBoxColumn();
             this.FolderLabel = new System.Windows.Forms.Label();
             this.UserLabel = new System.Windows.Forms.Label();
@@ -44,7 +45,10 @@
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.AuthorLabel = new System.Windows.Forms.Label();
             this.GitRepoLabel = new System.Windows.Forms.Label();
+            this.toggleLbl = new System.Windows.Forms.Label();
+            this.borderlands3SaveFileBindingSource = new System.Windows.Forms.BindingSource(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.borderlands3SaveFileBindingSource)).BeginInit();
             this.SuspendLayout();
             // 
             // dataGridView1
@@ -60,6 +64,7 @@
             this.Class,
             this.Level,
             this.DateTime,
+            this.HotKey,
             this.ReadOnly});
             this.dataGridView1.Location = new System.Drawing.Point(12, 72);
             this.dataGridView1.MultiSelect = false;
@@ -68,12 +73,13 @@
             this.dataGridView1.RowHeadersWidthSizeMode = System.Windows.Forms.DataGridViewRowHeadersWidthSizeMode.DisableResizing;
             this.dataGridView1.Size = new System.Drawing.Size(551, 321);
             this.dataGridView1.TabIndex = 2;
+            this.dataGridView1.CellFormatting += new System.Windows.Forms.DataGridViewCellFormattingEventHandler(this.dataGridView1_CellFormatting);
             this.dataGridView1.CellMouseUp += new System.Windows.Forms.DataGridViewCellMouseEventHandler(this.dataGridView1_CellMouseUp);
-            this.dataGridView1.CellValueChanged += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridView1_CellValueChanged);
             // 
             // FileName
             // 
             this.FileName.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
+            this.FileName.DataPropertyName = "FileName";
             this.FileName.FillWeight = 111.9289F;
             this.FileName.HeaderText = "File Name";
             this.FileName.MinimumWidth = 80;
@@ -83,6 +89,7 @@
             // 
             // NickName
             // 
+            this.NickName.DataPropertyName = "NickName";
             this.NickName.HeaderText = "Nick Name";
             this.NickName.Name = "NickName";
             this.NickName.ReadOnly = true;
@@ -90,6 +97,7 @@
             // Class
             // 
             this.Class.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
+            this.Class.DataPropertyName = "ClassName";
             this.Class.HeaderText = "Class";
             this.Class.MinimumWidth = 70;
             this.Class.Name = "Class";
@@ -100,6 +108,7 @@
             // Level
             // 
             this.Level.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
+            this.Level.DataPropertyName = "PlayerLevel";
             this.Level.HeaderText = "Lvl";
             this.Level.MinimumWidth = 50;
             this.Level.Name = "Level";
@@ -110,6 +119,7 @@
             // DateTime
             // 
             this.DateTime.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
+            this.DateTime.DataPropertyName = "LastWriteTime";
             this.DateTime.HeaderText = "Last Modified";
             this.DateTime.MinimumWidth = 140;
             this.DateTime.Name = "DateTime";
@@ -117,14 +127,27 @@
             this.DateTime.Resizable = System.Windows.Forms.DataGridViewTriState.False;
             this.DateTime.Width = 140;
             // 
+            // HotKey
+            // 
+            this.HotKey.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
+            this.HotKey.DataPropertyName = "HotKeyEnabled";
+            this.HotKey.HeaderText = "HotKey Enable";
+            this.HotKey.MinimumWidth = 50;
+            this.HotKey.Name = "HotKey";
+            this.HotKey.Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.HotKey.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
+            this.HotKey.Width = 50;
+            // 
             // ReadOnly
             // 
             this.ReadOnly.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
+            this.ReadOnly.DataPropertyName = "IsReadOnly";
             this.ReadOnly.FillWeight = 76.14214F;
             this.ReadOnly.HeaderText = "Read Only";
             this.ReadOnly.MinimumWidth = 50;
             this.ReadOnly.Name = "ReadOnly";
             this.ReadOnly.Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.ReadOnly.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
             this.ReadOnly.Width = 50;
             // 
             // FolderLabel
@@ -195,11 +218,25 @@
             this.GitRepoLabel.TabIndex = 9;
             this.GitRepoLabel.Text = "GitHub: DexManly/Borderlands3ReadOnlyManager";
             // 
+            // toggleLbl
+            // 
+            this.toggleLbl.AutoSize = true;
+            this.toggleLbl.Location = new System.Drawing.Point(454, 18);
+            this.toggleLbl.Name = "toggleLbl";
+            this.toggleLbl.Size = new System.Drawing.Size(109, 13);
+            this.toggleLbl.TabIndex = 10;
+            this.toggleLbl.Text = "ReadOnly Hotkey: F8";
+            // 
+            // borderlands3SaveFileBindingSource
+            // 
+            this.borderlands3SaveFileBindingSource.DataSource = typeof(Borderlands3ReadOnlyManager.HelperClasses.Borderlands3SaveFile);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(575, 405);
+            this.Controls.Add(this.toggleLbl);
             this.Controls.Add(this.labelUserContent);
             this.Controls.Add(this.labelFolderContent);
             this.Controls.Add(this.ChangeSettingsButton);
@@ -214,9 +251,9 @@
             this.ShowIcon = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Borderlands 3 Read Only Manager";
-            this.Activated += new System.EventHandler(this.MainForm_Activated);
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.MainForm_FormClosed);
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.borderlands3SaveFileBindingSource)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -232,11 +269,14 @@
         private System.Windows.Forms.ToolTip toolTip1;
         private System.Windows.Forms.Label AuthorLabel;
         private System.Windows.Forms.Label GitRepoLabel;
+        private System.Windows.Forms.Label toggleLbl;
+        private System.Windows.Forms.BindingSource borderlands3SaveFileBindingSource;
         private System.Windows.Forms.DataGridViewTextBoxColumn FileName;
         private System.Windows.Forms.DataGridViewTextBoxColumn NickName;
         private System.Windows.Forms.DataGridViewTextBoxColumn Class;
         private System.Windows.Forms.DataGridViewTextBoxColumn Level;
         private System.Windows.Forms.DataGridViewTextBoxColumn DateTime;
+        private System.Windows.Forms.DataGridViewCheckBoxColumn HotKey;
         private System.Windows.Forms.DataGridViewCheckBoxColumn ReadOnly;
     }
 }

@@ -92,6 +92,7 @@
   <ItemGroup>
     <Compile Include="HelperClasses\Borderlands3SaveFile.cs" />
     <Compile Include="HelperClasses\SaveFileMetaData.cs" />
+    <Compile Include="HelperClasses\SortableBindingList.cs" />
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -153,6 +154,8 @@
       <Install>false</Install>
     </BootstrapperPackage>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Properties\DataSources\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

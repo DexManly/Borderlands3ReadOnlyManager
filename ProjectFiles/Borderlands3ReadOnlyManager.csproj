@@ -91,6 +91,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="HelperClasses\Borderlands3SaveFile.cs" />
+    <Compile Include="HelperClasses\LevelXpList.cs" />
     <Compile Include="HelperClasses\SaveFileMetaData.cs" />
     <Compile Include="HelperClasses\SortableBindingList.cs" />
     <Compile Include="MainForm.cs">

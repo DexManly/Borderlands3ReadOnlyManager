@@ -218,7 +218,7 @@ namespace Borderlands3ReadOnlyManager.HelperClasses
             SaveBogoCrypt.Decrypt(buf, 0, remainingDataLength);
             Character characterSave = Serializer.Deserialize<Character>(new MemoryStream(buf));
 
-            saveFileMetaData.PlayerLevel = characterSave.GameStatsDatas.FirstOrDefault(a => a.StatPath.Equals(@"/Game/PlayerCharacters/_Shared/_Design/Stats/Character/Stat_Character_Level.Stat_Character_Level")).StatValue;
+            saveFileMetaData.PlayerLevel = CalculateLevel(characterSave);
             saveFileMetaData.NickName = characterSave.PreferredCharacterName;
             //characterSave.GameStatsDatas.ForEach(a => Console.WriteLine(a.StatPath + " " + a.StatValue));
             switch (characterSave.PlayerClassData.PlayerClassPath)
@@ -241,6 +241,22 @@ namespace Borderlands3ReadOnlyManager.HelperClasses
 
             return saveFileMetaData;
         } 
+
+        private int CalculateLevel(Character character)
+        {
+            int playerLevel = 0;
+            int xp = character.ExperiencePoints;
+
+            foreach (var requiredXp in LevelXpList.RequiredXpList)
+            {
+                if (xp >= requiredXp)
+                    playerLevel++;
+                else
+                    return playerLevel;
+            }
+
+            return playerLevel;
+        }
         #endregion
     }
 }

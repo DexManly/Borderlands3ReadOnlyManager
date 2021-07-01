@@ -83,6 +83,14 @@ namespace Borderlands3ReadOnlyManager.HelperClasses
             8798786,    // lvl 70
             9155282,    // lvl 71
             9520932,    // lvl 72
+            9895837,    // lvl 73
+	        10280103,   // lvl 74
+	        10673830,   // lvl 75
+	        11077120,   // lvl 76
+	        11490077,   // lvl 77
+	        11912801,   // lvl 78
+	        12345393,   // lvl 79
+	        12787955,   // lvl 80
         };
     }
 }

@@ -6,6 +6,7 @@ using System.Configuration;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Windows.Forms;
 
 namespace Borderlands3ReadOnlyManager
@@ -33,6 +34,7 @@ namespace Borderlands3ReadOnlyManager
         public MainForm()
         {
             InitializeComponent();
+            this.Text = $"Borderlands 3 Read Only Manager (v{Assembly.GetExecutingAssembly().GetName().Version.ToString()})";
             dataGridView1.AutoGenerateColumns = false; // Not a setting you can set in designer so I have to set it here :(
             ReadSettings();
             SetLabels();
